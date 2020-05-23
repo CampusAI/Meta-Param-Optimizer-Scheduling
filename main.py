@@ -1,7 +1,5 @@
 import sys, pathlib, os
-parent_dir = str(pathlib.Path(__file__).resolve().parents[1])
-sys.path.append(parent_dir)
-sys.path.append(parent_dir + "/training/HyperParameter-Optimizer")
+sys.path.append("HyperParameter-Optimizer/")
 
 import subprocess
 import time
@@ -12,7 +10,6 @@ from skopt.space import Real, Integer, Categorical
 from gaussian_process import GaussianProcessSearch
 from train_instance import TrainInstance
 
-env_dir = os.path.join(parent_dir, "Builds")
 
 def signal_handler(sig, frame):
     print('\nSIGINT signal received: killing instances...')
@@ -22,18 +19,15 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 search_space = [
-    Integer(low=128, high=2048, name='batch_size'),
-    Categorical(categories=[1e5, 5e5, 1e6], name='buffer_size'),
-    Real(low=0.5, high=1., name='init_entcoef'),
-    Integer(low=1, high=5, name='train_interval'),
-    Real(low=0.005, high=0.01, name='tau'),
-    Integer(low=1, high=3, name='num_layers'),
-    Integer(low=128, high=512, name='hidden_units'),
+    Real(low=0.1, high=1., name='reproduction_reward'),
+    Real(low=1e-7, high=1e-4, name='time_step_modifier'),
+    Real(low=0., high=1e-5, name='pop_reward_modifier'),
     ]
 
 if __name__ == "__main__":
     num_instances = 3
     gpro_input_file = None  # Use None to start from zero
+    env_dir = ""
     env_path = os.path.join(env_dir, "Test.x86_64")
 
     gp_search = GaussianProcessSearch(search_space=search_space,
@@ -57,7 +51,7 @@ if __name__ == "__main__":
         instances[i].train(candidates[i])
 
     while(True):
-        time.sleep(60)  # refresh rate in seconds
+        time.sleep(5)  # refresh rate in seconds
         for i in range(num_instances):
             instance = instances[i]
             if instance.inactive:
