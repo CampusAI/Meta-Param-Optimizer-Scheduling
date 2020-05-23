@@ -26,8 +26,13 @@ search_space = [
 
 if __name__ == "__main__":
     num_instances = 3
+
+    # Paths and files
     gpro_input_file = None  # Use None to start from zero
-    env_dir = ""
+    env_dir = "env/"
+    log_files_dir = ""
+    output_files_dir = "out_files/",
+    config_file="config/chickens.yaml"
     env_path = os.path.join(env_dir, "Test.x86_64")
 
     gp_search = GaussianProcessSearch(search_space=search_space,

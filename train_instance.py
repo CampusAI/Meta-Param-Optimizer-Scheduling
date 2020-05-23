@@ -5,22 +5,27 @@ import subprocess
 import time
 import io
 import yaml
+import json
 import signal
 import copy
 import numpy as np
 
-output_files_dir = "log_files/"
-config_file = "config/ppo.yaml"
 
 class TrainInstance:
-    def __init__(self, env_path, port):
+    def __init__(self, port, env_path, log_files_dir, output_files_dir = "out_files/", config_file="config/ppo.yaml"):
         # Public
         self.__reset()
         self.env_path = env_path
         self.port = port
 
-        # Ensure output_files_dir exisits 
-        pathlib.Path(output_files_dir).mkdir(
+        self.output_files_dir = output_files_dir  # Where to write terminal outputs
+        self.log_files_dir = log_files_dir        # Where to write logs saved by environment
+        self.config_file = config_file            # Config file to use in training
+
+        # Ensure directories exisits 
+        pathlib.Path(self.output_files_dir).mkdir(
+            parents=True, exist_ok=True)
+        pathlib.Path(self.log_files_dir).mkdir(
             parents=True, exist_ok=True)
 
     def __reset(self):
@@ -35,8 +40,9 @@ class TrainInstance:
         self.meta_params = meta_params
         print(self.meta_params)
         self.id = self.__dict_to_string(meta_params)
+        self.json_file = os.path.join(self.log_files_dir, str(self.id) + ".json")
         command = self.__get_command()
-        self.output_file = os.path.join(output_files_dir, str(self.id) + ".out")
+        self.output_file = os.path.join(self.output_files_dir, str(self.id) + ".out")
         log = open(self.output_file, 'a')
         self.process = subprocess.Popen(command, stdout=log, stderr=log, shell=True)
         print("Training started with PID: " + str(self.process.pid))
@@ -63,40 +69,35 @@ class TrainInstance:
     def get_val(self):
         """ Return training result (for the optimizer)
         """
-        # last_values = self.__get_last_n_values(n=50)
-        # if len(last_values) > 0:
-        #     return np.average(last_values)
+        last_values = self.__get_last_n_values(n=50)
+        if len(last_values) > 0:
+            return np.average(last_values)
         return 0
 
     def __get_last_n_values(self, n):
         last_values = []
-        with open(self.output_file, 'r') as f:
-            lines = f.read().splitlines()
-            for i in range(n):  # Check the last n lines for a mean reward
-                try:
-                    last_line = lines[-i]
-                    if "Mean Reward:" in last_line:
-                        # TODO some fancy heuristic instead of last value
-                        val = float(last_line.split("Mean Reward: ")[1].split(". Std of Reward")[0])
-                        last_values.append(val)
-                except Exception as e:
-                    print(e)
-                    pass
+        with open(json_file) as f:
+            data = json.load(f)
+            length = len(data["episodes"])
+            last_episodes = data["episodes"][max(length-n, 0):]
+            for episode in last_episodes:
+                last_values.append(len(episode["numCreatures"]))
         return last_values
 
     def __get_command(self):
         # "mlagents-learn train_configs/config.yaml --env=Builds/multiple_instances.x86_64 --run-id=test_mi --time-scale=100 --no-graphics --base-port=5100 --train >> output.nohup"
         # mlagents-learn config_ppo.yml --env test.x86_64 --no-graphics --train --env-args --time-step-modifier 0.0001 --reproduction-reward 0.5 --population-reward-modifier 0
         # command = " mlagents-learn "
-        # command += str(config_file)
+        # command += str(self.config_file)
         # command += " --env " + self.env_path
         # command += " --run-id=" + self.id
         # command += " --base-port=" + str(5000 + self.port)
         # command += " --time-scale=50 --no-graphics --train"
         # # Params
         # command += "--time-step-modifier " + str(self.time_step_modifier)
-        # command += "--reproduction-reward" + str(self.reproduction_reward)
-        # command += "--population-reward-modifier" + str(self.pop_reward_modifier)
+        # command += "--reproduction-reward " + str(self.reproduction_reward)
+        # command += "--population-reward-modifier " + str(self.pop_reward_modifier)
+        # command += "--log-file " + str(self.json_file)
         # command += str(self.id) + ".out"  # Where to save outputs
         command = "echo training " + self.id
         return command
