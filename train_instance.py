@@ -12,15 +12,15 @@ import numpy as np
 
 
 class TrainInstance:
-    def __init__(self, port, env_path, log_files_dir, output_files_dir = "out_files/", config_file="config/ppo.yaml"):
+    def __init__(self, port, env_path, log_files_dir, output_files_dir="out_files/", config_file="config/ppo.yaml"):
         # Public
         self.__reset()
-        self.env_path = env_path
+        self.env_path = str(env_path)
         self.port = port
 
-        self.output_files_dir = output_files_dir  # Where to write terminal outputs
-        self.log_files_dir = log_files_dir        # Where to write logs saved by environment
-        self.config_file = config_file            # Config file to use in training
+        self.output_files_dir = str(output_files_dir)  # Where to write terminal outputs
+        self.log_files_dir = str(log_files_dir)        # Where to write logs saved by environment
+        self.config_file = str(config_file)            # Config file to use in training
 
         # Ensure directories exisits 
         pathlib.Path(self.output_files_dir).mkdir(
@@ -85,21 +85,20 @@ class TrainInstance:
         return last_values
 
     def __get_command(self):
-        # "mlagents-learn train_configs/config.yaml --env=Builds/multiple_instances.x86_64 --run-id=test_mi --time-scale=100 --no-graphics --base-port=5100 --train >> output.nohup"
         # mlagents-learn config_ppo.yml --env test.x86_64 --no-graphics --train --env-args --time-step-modifier 0.0001 --reproduction-reward 0.5 --population-reward-modifier 0
-        # command = " mlagents-learn "
-        # command += str(self.config_file)
-        # command += " --env " + self.env_path
-        # command += " --run-id=" + self.id
-        # command += " --base-port=" + str(5000 + self.port)
-        # command += " --time-scale=50 --no-graphics --train"
-        # # Params
-        # command += "--time-step-modifier " + str(self.time_step_modifier)
-        # command += "--reproduction-reward " + str(self.reproduction_reward)
-        # command += "--population-reward-modifier " + str(self.pop_reward_modifier)
-        # command += "--log-file " + str(self.json_file)
+        command = " mlagents-learn "
+        command += str(self.config_file)
+        command += " --env " + self.env_path
+        command += " --run-id=" + self.id
+        command += " --base-port=" + str(5000 + self.port)
+        command += " --time-scale=50 --no-graphics --train --env-args "
+        # Params
+        command += " --time-step-modifier " + str(self.meta_params["time_step_modifier"])
+        command += " --reproduction-reward " + str(self.meta_params["reproduction_reward"])
+        command += " --population-reward-modifier " + str(self.meta_params["pop_reward_modifier"])
+        command += " --log-file " + str(self.json_file)
         # command += str(self.id) + ".out"  # Where to save outputs
-        command = "echo training " + self.id
+        print("command:", command)
         return command
 
     def __dict_to_string(self, dictionary):
