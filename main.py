@@ -24,13 +24,13 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 search_space = [
-    Real(low=0.1, high=1., name='reproduction_reward'),
+    Real(low=0.01, high=1., name='reproduction_reward'),
     Real(low=1e-7, high=1e-4, name='time_step_modifier'),
     Real(low=0., high=1e-5, name='pop_reward_modifier'),
 ]
 
 if __name__ == "__main__":
-    num_instances = 3
+    num_instances = 4
 
     # Paths and files
     gpro_input_file = None  # Use None to start from zero
@@ -65,7 +65,7 @@ if __name__ == "__main__":
         instances[i].train(candidates[i])
 
     while(True):
-        time.sleep(5)  # refresh rate in seconds
+        time.sleep(60)  # refresh rate in seconds
         for i in range(num_instances):
             instance = instances[i]
             if instance.inactive:

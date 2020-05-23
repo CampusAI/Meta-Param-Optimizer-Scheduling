@@ -8,7 +8,7 @@ default:
   lambd: 0.95
   learning_rate: 0.0003
   learning_rate_schedule: linear
-  max_steps: 5.0e7
+  max_steps: 0.75e7
   memory_size: 128
   normalize: false
   num_epoch: 3
@@ -23,6 +23,6 @@ default:
       strength: 1.0
       gamma: 0.99
     curiosity:
-      strength: 0.05
+      strength: 0.1
       gamma: 0.99
       encoding_size: 128

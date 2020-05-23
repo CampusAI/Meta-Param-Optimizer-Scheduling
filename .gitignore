@@ -133,7 +133,10 @@ logs/*
 summaries/*
 envs/*
 results.csv
+models/*
 
 .vscode/
 
 sync.sh
+
+.gitignore
