@@ -91,7 +91,7 @@ class TrainInstance:
         command += " --env " + self.env_path
         command += " --run-id=" + self.id
         command += " --base-port=" + str(5000 + self.port)
-        command += " --time-scale=50 --no-graphics --train --env-args "
+        command += " --time-scale=50 --num-envs=4 --no-graphics --train --env-args "
         # Params
         command += " --time-step-modifier " + str(self.meta_params["time_step_modifier"])
         command += " --reproduction-reward " + str(self.meta_params["reproduction_reward"])
