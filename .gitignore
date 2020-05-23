@@ -131,4 +131,7 @@ dmypy.json
 out_files/*
 log_files/*
 summaries/*
+envs/*
 results.csv
+
+.vscode/
