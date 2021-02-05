@@ -139,4 +139,4 @@ models/*
 
 sync.sh
 
-.gitignore
+nohup.out
